@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_inicio"
+        android:icon="@drawable/ic_inicio"
+        android:title="Inicio" />
+
+    <item
+        android:id="@+id/nav_clientes"
+        android:icon="@drawable/ic_clientes"
+        android:title="Clientes" />
+
+    <item
+        android:id="@+id/nav_citas"
+        android:icon="@drawable/ic_citas"
+        android:title="Citas" />
+
+    <item
+        android:id="@+id/nav_ordenes"
+        android:icon="@drawable/ic_ordenes"
+        android:title="Órdenes" />
+
+    <item
+        android:id="@+id/nav_inventario"
+        android:icon="@drawable/ic_inventario"
+        android:title="Inventario" />
+
+</menu>
