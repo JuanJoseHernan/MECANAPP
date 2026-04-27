@@ -29,6 +29,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombreRefaccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Nombre de la refacción"
@@ -45,6 +46,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCategoriaRefaccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Categoría"
@@ -61,6 +63,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCantidadActual"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Cantidad actual"
@@ -76,7 +79,9 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
+            <!-- AQUÍ ESTÁ EL ID QUE FALTABA -->
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCantidadMinima"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Cantidad mínima"

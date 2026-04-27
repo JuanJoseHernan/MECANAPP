@@ -36,6 +36,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
@@ -52,6 +53,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTelefono"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="phone"
@@ -83,6 +85,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPlaca"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapCharacters"
@@ -101,6 +104,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMarca"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
@@ -126,6 +130,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etModelo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
@@ -144,6 +149,7 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etAnio"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"

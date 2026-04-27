@@ -47,9 +47,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Dependencias de Room agregadas
+    // libreriasROOM
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion") // Para usar corrutinas
+    implementation("androidx.room:room-ktx:$roomVersion")
     add("ksp", "androidx.room:room-compiler:$roomVersion")
 }

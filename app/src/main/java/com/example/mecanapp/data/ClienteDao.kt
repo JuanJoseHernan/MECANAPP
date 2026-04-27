@@ -1,25 +1,29 @@
+
 package com.example.mecanapp.data
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
+
+data class ClienteConVehiculos(
+    @Embedded val cliente: Cliente,
+    @Relation(
+        parentColumn = "id_cliente",
+        entityColumn = "id_cliente"
+    )
+    val vehiculos: List<Vehiculo>
+)
 
 @Dao
 interface ClienteDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(cliente: Cliente): Long
 
+    // Esta es la consulta clave para llenar tus tarjetas
+    @Transaction
+    @Query("SELECT * FROM clientes")
+    suspend fun getClientesConVehiculos(): List<ClienteConVehiculos>
 
     @Query("SELECT * FROM clientes")
     suspend fun getAllClientes(): List<Cliente>
-
-
-    @Query("SELECT * FROM clientes WHERE nombre LIKE '%' || :busqueda || '%' OR telefono LIKE '%' || :busqueda || '%'")
-    suspend fun buscarClientes(busqueda: String): List<Cliente>
 
     @Update
     suspend fun update(cliente: Cliente)

@@ -3,8 +3,6 @@ package com.example.mecanapp.data
 import android.content.Context
 import androidx.room.*
 
-// ENTIDADES
-
 
 @Entity(tableName = "clientes")
 data class Cliente(
@@ -51,6 +49,7 @@ data class Inventario(
     val nombre: String,
     val descripcion: String?,
     val cantidad: Int = 0,
+    val cantidad_minima: Int = 0, // ¡NUEVO CAMPO!
     val precio: Double?
 )
 
@@ -89,6 +88,7 @@ data class Reparacion(
     val fecha_fin: String?
 )
 
+
 @Entity(
     tableName = "reparacion_servicios",
     primaryKeys = ["id_reparacion", "id_servicio"],
@@ -118,9 +118,6 @@ data class ReparacionRefaccion(
     val cantidad: Int
 )
 
-//  CONFIGURACIÓN bD
-
-
 @Database(
     entities = [
         Cliente::class, Vehiculo::class, Usuario::class,
@@ -132,9 +129,9 @@ data class ReparacionRefaccion(
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // conectamos los DAOs
     abstract fun clienteDao(): ClienteDao
     abstract fun inventarioDao(): InventarioDao
+    abstract fun vehiculoDao(): VehiculoDao // ¡Agregamos el nuevo DAO!
 
     companion object {
         @Volatile

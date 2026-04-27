@@ -5,12 +5,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mecanapp.data.AppDatabase
+import com.example.mecanapp.data.Inventario
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class InventarioFragment : Fragment() {
+
+    private lateinit var adapter: InventarioAdapter
+    private lateinit var tvAlertas: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -21,18 +33,79 @@ class InventarioFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val fab = view.findViewById<FloatingActionButton>(R.id.fabAgregarInventario)
-        fab.setOnClickListener {
-            val dialogView = layoutInflater.inflate(R.layout.dialog_nueva_refaccion, null)
-            val dialog = MaterialAlertDialogBuilder(requireContext())
-                .setView(dialogView).setCancelable(false).create()
 
-            dialogView.findViewById<Button>(R.id.btnCancelarInv).setOnClickListener { dialog.dismiss() }
-            dialogView.findViewById<Button>(R.id.btnGuardarInv).setOnClickListener {
-                Toast.makeText(requireContext(), "¡Refacción guardada! (Prueba)", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+        tvAlertas = view.findViewById(R.id.tvAlertasInventario)
+        val rvInventario = view.findViewById<RecyclerView>(R.id.rvInventario)
+        adapter = InventarioAdapter(emptyList())
+        rvInventario.adapter = adapter
+
+        cargarInventario()
+
+        val fab = view.findViewById<FloatingActionButton>(R.id.fabAgregarInventario)
+        fab.setOnClickListener { mostrarFormularioNuevaRefaccion() }
+    }
+
+    private fun cargarInventario() {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(requireContext())
+            val lista = withContext(Dispatchers.IO) {
+                db.inventarioDao().getInventario()
             }
-            dialog.show()
+
+            adapter.actualizarLista(lista)
+
+            // Contar productos bajos en stock
+            val bajos = lista.count { it.cantidad < it.cantidad_minima }
+            if (bajos > 0) {
+                tvAlertas.text = "$bajos producto(s) bajo stock mínimo"
+            } else {
+                tvAlertas.text = "Inventario estable"
+                tvAlertas.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
+            }
         }
+    }
+
+    private fun mostrarFormularioNuevaRefaccion() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_nueva_refaccion, null)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView).setCancelable(false).create()
+
+        val btnCancelar = dialogView.findViewById<Button>(R.id.btnCancelarInv)
+        val btnGuardar = dialogView.findViewById<Button>(R.id.btnGuardarInv)
+
+        val etNombre = dialogView.findViewById<TextInputEditText>(R.id.etNombreRefaccion)
+        val etCategoria = dialogView.findViewById<TextInputEditText>(R.id.etCategoriaRefaccion)
+        val etCantidad = dialogView.findViewById<TextInputEditText>(R.id.etCantidadActual)
+
+        // ¡OJO! Asegúrate de que el cuarto input en tu dialog_nueva_refaccion.xml tenga este ID:
+        val etCantidadMinima = dialogView.findViewById<TextInputEditText>(R.id.etCantidadMinima)
+
+        btnCancelar.setOnClickListener { dialog.dismiss() }
+
+        btnGuardar.setOnClickListener {
+            val nombre = etNombre.text.toString().trim()
+            val categoria = etCategoria.text.toString().trim()
+            val actual = etCantidad.text.toString().toIntOrNull() ?: 0
+            val minima = etCantidadMinima.text?.toString()?.toIntOrNull() ?: 0
+
+            if (nombre.isEmpty()) {
+                Toast.makeText(requireContext(), "Nombre es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    val nuevaRefaccion = Inventario(
+                        nombre = nombre, descripcion = categoria,
+                        cantidad = actual, cantidad_minima = minima, precio = 0.0
+                    )
+                    AppDatabase.getDatabase(requireContext()).inventarioDao().insert(nuevaRefaccion)
+                }
+                Toast.makeText(requireContext(), "Refacción guardada", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+                cargarInventario() // Recarga la lista
+            }
+        }
+        dialog.show()
     }
 }
