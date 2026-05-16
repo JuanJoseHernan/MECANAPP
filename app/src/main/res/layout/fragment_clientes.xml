@@ -4,9 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"> <!-- Fondo gris claro para resaltar tarjetas -->
+    android:background="#F5F5F5">
 
-    <!-- Barra de Búsqueda -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/searchLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -21,14 +20,30 @@
         app:boxBackgroundColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Agregamos ID y opciones de teclado -->
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBuscarCliente"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Buscar por nombre o placa..." />
+            android:hint="Buscar por nombre o placa..."
+            android:imeOptions="actionSearch"
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- MENSAJE DE ESTADO VACÍO (Oculto por defecto) -->
+    <TextView
+        android:id="@+id/tvSinResultados"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aún no hay clientes registrados"
+        android:textColor="#888888"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchLayout" />
 
-    <!-- El contenedor de la lista -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvClientes"
         android:layout_width="0dp"
@@ -42,7 +57,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Botón Flotante (+) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAgregarCliente"
         android:layout_width="wrap_content"
@@ -51,6 +65,5 @@
         android:src="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    <!-- Cambia constraintEnd a constraintStart si lo quieres a la izquierda -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

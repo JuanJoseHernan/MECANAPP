@@ -32,6 +32,7 @@
             app:boxCornerRadiusTopStart="12dp">
 
             <AutoCompleteTextView
+                android:id="@+id/etClienteCita"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none"/>
@@ -49,9 +50,11 @@
             app:boxCornerRadiusTopStart="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etFechaCita"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Fecha"
+                android:hint="Fecha (dd/mm/aaaa)"
+                android:maxLength="10"
                 android:inputType="date" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -67,9 +70,11 @@
             app:boxCornerRadiusTopStart="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etHoraCita"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Hora"
+                android:hint="Hora (hh:mm)"
+                android:maxLength="5"
                 android:inputType="time" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,6 +90,7 @@
             app:boxCornerRadiusTopStart="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etServicioCita"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Servicio"

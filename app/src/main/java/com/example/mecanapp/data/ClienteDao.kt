@@ -1,4 +1,3 @@
-
 package com.example.mecanapp.data
 
 import androidx.room.*
@@ -17,13 +16,22 @@ interface ClienteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(cliente: Cliente): Long
 
-    // Esta es la consulta clave para llenar tus tarjetas
     @Transaction
     @Query("SELECT * FROM clientes")
     suspend fun getClientesConVehiculos(): List<ClienteConVehiculos>
 
-    @Query("SELECT * FROM clientes")
-    suspend fun getAllClientes(): List<Cliente>
+    @Query("SELECT COUNT(*) FROM clientes")
+    suspend fun getClientesCount(): Int
+
+    // ¡NUEVA FUNCIÓN! Busca por nombre o placa
+    @Transaction
+    @Query("""
+        SELECT DISTINCT c.* FROM clientes c 
+        LEFT JOIN vehiculos v ON c.id_cliente = v.id_cliente 
+        WHERE c.nombre LIKE '%' || :busqueda || '%' 
+        OR v.placas LIKE '%' || :busqueda || '%'
+    """)
+    suspend fun buscarClientesConVehiculos(busqueda: String): List<ClienteConVehiculos>
 
     @Update
     suspend fun update(cliente: Cliente)

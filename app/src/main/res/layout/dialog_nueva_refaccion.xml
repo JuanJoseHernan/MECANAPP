@@ -32,10 +32,11 @@
                 android:id="@+id/etNombreRefaccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nombre de la refacción"
+                android:hint="Nombre de la refacción *"
                 android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- AHORA SÍ: DESCRIPCIÓN EN LUGAR DE CATEGORÍA -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
@@ -46,11 +47,11 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCategoriaRefaccion"
+                android:id="@+id/etDescripcionRefaccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Categoría"
-                android:inputType="textCapWords" />
+                android:hint="Descripción"
+                android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -66,7 +67,7 @@
                 android:id="@+id/etCantidadActual"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Cantidad actual"
+                android:hint="Cantidad *"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,13 +80,12 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp">
-            <!-- AQUÍ ESTÁ EL ID QUE FALTABA -->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCantidadMinima"
+                android:id="@+id/etPrecioRefaccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Cantidad mínima"
-                android:inputType="number" />
+                android:hint="Precio ($) *"
+                android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout

@@ -49,7 +49,7 @@ data class Inventario(
     val nombre: String,
     val descripcion: String?,
     val cantidad: Int = 0,
-    val cantidad_minima: Int = 0, // ¡NUEVO CAMPO!
+    val cantidad_minima: Int = 0,
     val precio: Double?
 )
 
@@ -132,6 +132,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
     abstract fun inventarioDao(): InventarioDao
     abstract fun vehiculoDao(): VehiculoDao // ¡Agregamos el nuevo DAO!
+    abstract fun citaDao(): CitaDao       // <-- ¡AGREGA ESTO!
+    abstract fun reparacionDao(): ReparacionDao
+    abstract fun usuarioDao(): UsuarioDao
+
+    abstract fun reparacionDetalleDao(): ReparacionDetalleDao
 
     companion object {
         @Volatile

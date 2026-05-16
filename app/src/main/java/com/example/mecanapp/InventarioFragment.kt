@@ -58,6 +58,7 @@ class InventarioFragment : Fragment() {
             val bajos = lista.count { it.cantidad < it.cantidad_minima }
             if (bajos > 0) {
                 tvAlertas.text = "$bajos producto(s) bajo stock mínimo"
+                tvAlertas.setTextColor(android.graphics.Color.parseColor("#F44336"))
             } else {
                 tvAlertas.text = "Inventario estable"
                 tvAlertas.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
@@ -74,36 +75,48 @@ class InventarioFragment : Fragment() {
         val btnGuardar = dialogView.findViewById<Button>(R.id.btnGuardarInv)
 
         val etNombre = dialogView.findViewById<TextInputEditText>(R.id.etNombreRefaccion)
-        val etCategoria = dialogView.findViewById<TextInputEditText>(R.id.etCategoriaRefaccion)
+        val etDescripcion = dialogView.findViewById<TextInputEditText>(R.id.etDescripcionRefaccion)
         val etCantidad = dialogView.findViewById<TextInputEditText>(R.id.etCantidadActual)
-
-        // ¡OJO! Asegúrate de que el cuarto input en tu dialog_nueva_refaccion.xml tenga este ID:
-        val etCantidadMinima = dialogView.findViewById<TextInputEditText>(R.id.etCantidadMinima)
+        val etPrecio = dialogView.findViewById<TextInputEditText>(R.id.etPrecioRefaccion)
 
         btnCancelar.setOnClickListener { dialog.dismiss() }
 
         btnGuardar.setOnClickListener {
             val nombre = etNombre.text.toString().trim()
-            val categoria = etCategoria.text.toString().trim()
-            val actual = etCantidad.text.toString().toIntOrNull() ?: 0
-            val minima = etCantidadMinima.text?.toString()?.toIntOrNull() ?: 0
+            val descripcion = etDescripcion.text.toString().trim()
+            val cantidadStr = etCantidad.text.toString().trim()
+            val precioStr = etPrecio.text.toString().trim()
 
             if (nombre.isEmpty()) {
-                Toast.makeText(requireContext(), "Nombre es obligatorio", Toast.LENGTH_SHORT).show()
+                etNombre.error = "Nombre es obligatorio"
                 return@setOnClickListener
             }
+            if (cantidadStr.isEmpty()) {
+                etCantidad.error = "Cantidad es obligatoria"
+                return@setOnClickListener
+            }
+            if (precioStr.isEmpty()) {
+                etPrecio.error = "Precio es obligatorio"
+                return@setOnClickListener
+            }
+
+            val actual = cantidadStr.toIntOrNull() ?: 0
+            val precio = precioStr.toDoubleOrNull() ?: 0.0
 
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     val nuevaRefaccion = Inventario(
-                        nombre = nombre, descripcion = categoria,
-                        cantidad = actual, cantidad_minima = minima, precio = 0.0
+                        nombre = nombre,
+                        descripcion = descripcion,
+                        cantidad = actual,
+                        cantidad_minima = actual, // ¡Se guarda igual a la cantidad!
+                        precio = precio
                     )
                     AppDatabase.getDatabase(requireContext()).inventarioDao().insert(nuevaRefaccion)
                 }
-                Toast.makeText(requireContext(), "Refacción guardada", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Refacción guardada ✅", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
-                cargarInventario() // Recarga la lista
+                cargarInventario()
             }
         }
         dialog.show()

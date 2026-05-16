@@ -22,4 +22,7 @@ interface InventarioDao {
 
     @Delete
     suspend fun delete(refaccion: Inventario)
+
+    @Query("SELECT COUNT(*) FROM inventario")
+    suspend fun getInventarioCount(): Int
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvClienteOrden"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/tvEstadoOrden"
+                android:text="Nombre del Cliente"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEstadoOrden"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/bg_circle_blue"
+                android:backgroundTint="#FF9800"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="En curso"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tvVehiculoOrden"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:drawablePadding="8dp"
+            android:text="Placas - Marca Modelo"
+            android:textColor="#666666"
+            app:drawableStartCompat="@drawable/ic_car"
+            app:drawableTint="#888888" />
+
+        <TextView
+            android:id="@+id/tvMecanicoOrden"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:drawablePadding="8dp"
+            android:text="Mecánico: Nombre"
+            android:textColor="#666666"
+            app:drawableStartCompat="@drawable/ic_clientes"
+            app:drawableTint="#888888" />
+
+        <TextView
+            android:id="@+id/tvFechaEntrega"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Entrega: 00/00/0000"
+            android:textColor="#1565C0"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnFinalizarOrden"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Marcar como Completada"
+            app:strokeColor="#4CAF50"
+            android:textColor="#4CAF50"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
