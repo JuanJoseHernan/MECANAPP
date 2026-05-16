@@ -5,8 +5,6 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -119,7 +117,6 @@ class InicioFragment : Fragment() {
         }
 
         // --- SOLUCIÓN SENCILLA AL ROL ---
-        // Usamos un botón normal que al presionarlo abre un menú nativo de opciones
         val btnRol = Button(context, null, com.google.android.material.R.style.Widget_MaterialComponents_Button_OutlinedButton).apply {
             text = "Seleccionar Rol *"
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
@@ -142,7 +139,7 @@ class InicioFragment : Fragment() {
 
         // Envolver campos en TextInputLayout para mejor estética
         layout.addView(TextInputLayout(context).apply { addView(inputNombre) })
-        layout.addView(btnRol) // Agregamos el nuevo botón de Rol
+        layout.addView(btnRol)
         layout.addView(TextInputLayout(context).apply { addView(inputTelefono) })
         layout.addView(TextInputLayout(context).apply { addView(inputCorreo) })
 
@@ -184,10 +181,11 @@ class InicioFragment : Fragment() {
             // Guardar usuario en la BD si todo es correcto
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    val nuevoUsuario = Usuario(nombre = nombre, rol = rolSeleccionado, telefono = tel, correo = correo)
+                    // AQUÍ AÑADIMOS EL ESTADO POR DEFECTO
+                    val nuevoUsuario = Usuario(nombre = nombre, rol = rolSeleccionado, telefono = tel, correo = correo, estado = "Disponible")
                     AppDatabase.getDatabase(context).usuarioDao().insert(nuevoUsuario)
                 }
-                Toast.makeText(context, "Personal registrado ✅", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Personal registrado ", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarDatos() // Recargamos para ver al nuevo usuario en la lista
             }

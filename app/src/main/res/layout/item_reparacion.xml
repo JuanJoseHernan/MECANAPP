@@ -32,7 +32,8 @@
             <TextView
                 android:id="@+id/tvEstadoOrden"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+
+                android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/bg_circle_blue"
                 android:backgroundTint="#FF9800"

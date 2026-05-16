@@ -38,4 +38,9 @@ interface ReparacionDao {
         ORDER BY r.id_reparacion DESC
     """)
     suspend fun getTodasLasReparaciones(): List<ReparacionDisplay>
+
+    // --- NUEVA FUNCIÓN AÑADIDA ---
+    // Nos permite obtener una reparación específica para saber qué mecánico tenía asignado
+    @Query("SELECT * FROM reparaciones WHERE id_reparacion = :id")
+    suspend fun getReparacionById(id: Int): Reparacion?
 }

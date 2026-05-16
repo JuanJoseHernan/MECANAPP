@@ -7,18 +7,19 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.LinearLayout // Importado
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mecanapp.data.AppDatabase
 import com.example.mecanapp.data.CitaParaOrden
-import com.example.mecanapp.data.Inventario // Importado
+import com.example.mecanapp.data.Inventario
 import com.example.mecanapp.data.Reparacion
-import com.example.mecanapp.data.ReparacionRefaccion // Importado
-import com.example.mecanapp.data.ReparacionServicio // Importado
-import com.example.mecanapp.data.Servicio // Importado
+import com.example.mecanapp.data.ReparacionRefaccion
+import com.example.mecanapp.data.ReparacionServicio
+import com.example.mecanapp.data.Servicio
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,9 +47,11 @@ class OrdenesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup Lista
         val rv = view.findViewById<RecyclerView>(R.id.rvOrdenes)
-        adapter = ReparacionAdapter(emptyList()) { id -> finalizarOrden(id) }
+        adapter = ReparacionAdapter(emptyList(),
+            onFinalizarClick = { id -> finalizarOrden(id) },
+            onDetalleClick = { id -> mostrarDetallesOrden(id) }
+        )
         rv.adapter = adapter
 
         cargarOrdenesDeBD()
@@ -67,6 +70,58 @@ class OrdenesFragment : Fragment() {
         }
     }
 
+    private fun mostrarDetallesOrden(idReparacion: Int) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_detalle_orden, null)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(requireContext())
+            val dao = db.reparacionDetalleDao()
+
+            val infoBase = withContext(Dispatchers.IO) { dao.getDetalleBase(idReparacion) }
+            val servicios = withContext(Dispatchers.IO) { dao.getServiciosDeReparacion(idReparacion) }
+            val refacciones = withContext(Dispatchers.IO) { dao.getRefaccionesDeReparacion(idReparacion) }
+
+            dialogView.findViewById<TextView>(R.id.tvDetalleCliente).text = "Cliente: ${infoBase?.nombre_cliente ?: "Desconocido"}"
+            dialogView.findViewById<TextView>(R.id.tvDetalleVehiculo).text = "Vehículo: ${infoBase?.marca ?: ""} ${infoBase?.modelo ?: ""} (${infoBase?.placas ?: ""})"
+            dialogView.findViewById<TextView>(R.id.tvDetalleMecanico).text = "Mecánico: ${infoBase?.nombre_mecanico ?: "Sin asignar"}"
+            dialogView.findViewById<TextView>(R.id.tvDetalleFecha).text = "Entrega: ${infoBase?.fecha_fin ?: "N/A"}"
+
+            val containerServicios = dialogView.findViewById<LinearLayout>(R.id.containerDetalleServicios)
+            if (servicios.isEmpty()) {
+                containerServicios.addView(TextView(requireContext()).apply { text = "No se registraron servicios." })
+            } else {
+                servicios.forEach { s ->
+                    val tv = TextView(requireContext()).apply {
+                        text = "• ${s.nombre} - $${s.precio}"
+                        textSize = 15f
+                        setPadding(0, 4, 0, 4)
+                    }
+                    containerServicios.addView(tv)
+                }
+            }
+
+            val containerRefacciones = dialogView.findViewById<LinearLayout>(R.id.containerDetalleRefacciones)
+            if (refacciones.isEmpty()) {
+                containerRefacciones.addView(TextView(requireContext()).apply { text = "No se usaron refacciones." })
+            } else {
+                refacciones.forEach { r ->
+                    val tv = TextView(requireContext()).apply {
+                        text = "• ${r.nombre} (Cantidad: ${r.cantidad})"
+                        textSize = 15f
+                        setPadding(0, 4, 0, 4)
+                    }
+                    containerRefacciones.addView(tv)
+                }
+            }
+        }
+
+        dialogView.findViewById<Button>(R.id.btnCerrarDetalles).setOnClickListener { dialog.dismiss() }
+        dialog.show()
+    }
+
     private fun finalizarOrden(idReparacion: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_finalizar_orden, null)
         val container = dialogView.findViewById<LinearLayout>(R.id.containerServicios)
@@ -77,36 +132,32 @@ class OrdenesFragment : Fragment() {
             .setCancelable(false)
             .create()
 
-        // Lista de piezas para los dropdowns
         var listaInventario = emptyList<Inventario>()
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(requireContext())
             listaInventario = withContext(Dispatchers.IO) {
                 db.inventarioDao().getInventario()
             }
-            // Agregamos el primer bloque de servicio automáticamente
             agregarBloqueServicio(container, listaInventario)
         }
 
         btnAdd.setOnClickListener { agregarBloqueServicio(container, listaInventario) }
-
         dialogView.findViewById<Button>(R.id.btnCancelarFinalizar).setOnClickListener { dialog.dismiss() }
-
         dialogView.findViewById<Button>(R.id.btnGuardarFinalizar).setOnClickListener {
             guardarTodoYCompletar(idReparacion, container, dialog)
         }
 
         dialog.show()
+        dialog.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
     }
 
     private fun agregarBloqueServicio(container: LinearLayout, inventario: List<Inventario>) {
         val view = layoutInflater.inflate(R.layout.item_servicio_form, null)
         val autoComp = view.findViewById<AutoCompleteTextView>(R.id.etRefaccionServicio)
-
         val nombres = inventario.map { it.nombre }
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, nombres)
         autoComp.setAdapter(adapter)
-
         container.addView(view)
     }
 
@@ -116,8 +167,13 @@ class OrdenesFragment : Fragment() {
             val daoDetalle = db.reparacionDetalleDao()
             val inventarioFull = withContext(Dispatchers.IO) { db.inventarioDao().getInventario() }
 
+            // Usamos la nueva consulta de ReparacionDao para obtener el id_usuario
+            val reparacion = withContext(Dispatchers.IO) {
+                db.reparacionDao().getReparacionById(idRep)
+            }
+            val idUsuarioAsignado = reparacion?.id_usuario
+
             withContext(Dispatchers.IO) {
-                // Recorremos cada bloque de servicio del formulario
                 for (i in 0 until container.childCount) {
                     val view = container.getChildAt(i)
                     val nombreS = view.findViewById<TextInputEditText>(R.id.etNombreServicio).text.toString()
@@ -126,14 +182,10 @@ class OrdenesFragment : Fragment() {
                     val cantRef = view.findViewById<TextInputEditText>(R.id.etCantidadRefaccion).text.toString().toIntOrNull() ?: 0
 
                     if (nombreS.isNotEmpty()) {
-                        // 1. Guardar el Servicio
                         val nuevoServicio = Servicio(nombre = nombreS, descripcion = "Reparación #$idRep", precio = precioS)
                         val idServicio = daoDetalle.insertarServicio(nuevoServicio)
-
-                        // 2. Vincular con la Reparación (reparacion_servicios)
                         daoDetalle.vincularServicio(ReparacionServicio(idRep, idServicio.toInt()))
 
-                        // 3. Si usó refacción, vincular y descontar stock
                         val refEncontrada = inventarioFull.find { it.nombre == refaccionNombre }
                         if (refEncontrada != null && cantRef > 0) {
                             daoDetalle.vincularRefaccion(ReparacionRefaccion(idRep, refEncontrada.id_refaccion, cantRef))
@@ -141,11 +193,17 @@ class OrdenesFragment : Fragment() {
                         }
                     }
                 }
-                // 4. Marcar orden como completada
+
+                // 1. Completar la reparación
                 db.reparacionDao().actualizarEstado(idRep, "Completada")
+
+                // 2. Liberar al mecánico (Cambiar su estado a Disponible)
+                if (idUsuarioAsignado != null) {
+                    db.usuarioDao().actualizarEstado(idUsuarioAsignado, "Disponible")
+                }
             }
 
-            Toast.makeText(requireContext(), "Orden finalizada y servicios registrados", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Orden finalizada y mecánico liberado", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
             cargarOrdenesDeBD()
         }
@@ -172,31 +230,45 @@ class OrdenesFragment : Fragment() {
 
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(requireContext())
-            val (citasCompletadas, todosUsuarios) = withContext(Dispatchers.IO) {
-                Pair(db.citaDao().getCitasCompletadasParaOrden(), db.usuarioDao().getAllUsuarios())
+            val (citasConfirmadas, todosUsuarios) = withContext(Dispatchers.IO) {
+                Pair(db.citaDao().getCitasConfirmadasParaOrden(), db.usuarioDao().getAllUsuarios())
             }
 
-            val opcionesCitas = citasCompletadas.map {
+            val opcionesCitas = citasConfirmadas.map {
                 val txt = "${it.nombreCliente} - ${it.placas ?: "S/P"} (${it.vehiculo})"
                 citasMap[txt] = it
                 txt
             }
             etCita.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, opcionesCitas))
 
-            val mecanicos = todosUsuarios.filter { it.rol == "Mecánico" }
-            val opcionesMecanicos = mecanicos.map {
-                mecanicosMap[it.nombre] = it.id_usuario
-                it.nombre
+            val mecanicosDisponibles = todosUsuarios.filter { it.rol == "Mecánico" && it.estado == "Disponible" }
+
+            // MODIFICACIÓN AQUÍ: Manejo visual de lista vacía
+            if (mecanicosDisponibles.isEmpty()) {
+                val mensajeVacio = listOf("No hay mecánicos disponibles")
+                etMecanico.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, mensajeVacio))
+                etMecanico.setText("", false) // Limpiar cualquier texto previo sin disparar filtros
+            } else {
+                val opcionesMecanicos = mecanicosDisponibles.map {
+                    mecanicosMap[it.nombre] = it.id_usuario
+                    it.nombre
+                }
+                etMecanico.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, opcionesMecanicos))
             }
-            etMecanico.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, opcionesMecanicos))
         }
 
-        etCita.setOnItemClickListener { _, _, position, _ ->
-            citaSeleccionada = citasMap[etCita.adapter.getItem(position).toString()]
-        }
-
+        etCita.setOnItemClickListener { _, _, position, _ -> citaSeleccionada = citasMap[etCita.adapter.getItem(position).toString()] }
         etMecanico.setOnItemClickListener { _, _, position, _ ->
-            mecanicoSeleccionadoId = mecanicosMap[etMecanico.adapter.getItem(position).toString()]
+            val seleccion = etMecanico.adapter.getItem(position).toString()
+            // Verificamos que no sea nuestro mensaje de error antes de asignar el ID
+            if (seleccion != "No hay mecánicos disponibles") {
+                mecanicoSeleccionadoId = mecanicosMap[seleccion]
+            } else {
+                // Si seleccionan el mensaje de error, reseteamos la selección y limpiamos el texto
+                mecanicoSeleccionadoId = null
+                etMecanico.setText("", false)
+                Toast.makeText(requireContext(), "Debes registrar o liberar a un mecánico primero.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         etFechaFin.setOnClickListener {
@@ -228,13 +300,19 @@ class OrdenesFragment : Fragment() {
                         fecha_inicio = fechaInicio,
                         fecha_fin = fechaFin
                     )
-                    AppDatabase.getDatabase(requireContext()).reparacionDao().insert(nueva)
+
+                    val db = AppDatabase.getDatabase(requireContext())
+                    db.reparacionDao().insert(nueva)
+                    db.citaDao().actualizarEstado(citaSeleccionada!!.id_cita, "Completada")
+                    db.usuarioDao().actualizarEstado(mecanicoSeleccionadoId!!, "Ocupado")
                 }
-                Toast.makeText(requireContext(), "Orden creada", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Orden creada y mecánico asignado", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarOrdenesDeBD()
             }
         }
         dialog.show()
+        dialog.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
     }
 }

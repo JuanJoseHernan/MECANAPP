@@ -11,7 +11,8 @@ import com.example.mecanapp.data.ReparacionDisplay
 
 class ReparacionAdapter(
     private var list: List<ReparacionDisplay>,
-    private val onFinalizar: (Int) -> Unit
+    private val onFinalizarClick: (Int) -> Unit,
+    private val onDetalleClick: (Int) -> Unit
 ) : RecyclerView.Adapter<ReparacionAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -39,12 +40,23 @@ class ReparacionAdapter(
         if (item.estado == "Completada") {
             holder.tvEstado.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#4CAF50"))
             holder.btnFinalizar.visibility = View.GONE
+
+            // Hacemos clickeable la tarjeta entera para ver detalles
+            holder.itemView.setOnClickListener {
+                onDetalleClick(item.id_reparacion)
+            }
         } else {
             holder.tvEstado.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#FF9800"))
             holder.btnFinalizar.visibility = View.VISIBLE
-        }
 
-        holder.btnFinalizar.setOnClickListener { onFinalizar(item.id_reparacion) }
+            // Quitamos el click a la tarjeta si no está completada
+            holder.itemView.setOnClickListener(null)
+
+            // Asignamos el click al botón de finalizar
+            holder.btnFinalizar.setOnClickListener {
+                onFinalizarClick(item.id_reparacion)
+            }
+        }
     }
 
     override fun getItemCount() = list.size

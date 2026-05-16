@@ -33,12 +33,12 @@
             <TextView
                 android:id="@+id/tvEstadoCita"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/bg_circle_blue"
                 android:backgroundTint="#2196F3"
+                android:gravity="center"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
                 android:text="Confirmada"
                 android:textColor="@android:color/white"
                 android:textSize="12sp"
@@ -86,19 +86,9 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnCompletar"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Completar"
-                android:textColor="#4CAF50"
-                app:strokeColor="#4CAF50" />
-
-            <Button
                 android:id="@+id/btnNoAsistio"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="No asistió"
                 android:textColor="#F44336"

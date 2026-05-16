@@ -61,13 +61,13 @@ interface CitaDao {
     """)
     suspend fun buscarCitas(busqueda: String): List<CitaItem>
 
-    // ¡Ahora sí está ADENTRO de la interfaz!
+    // ¡Consulta actualizada para traer solo las citas Confirmadas!
     @Query("""
         SELECT c.id_cita, c.id_vehiculo, c.id_usuario, cl.nombre AS nombreCliente, v.placas, (v.marca || ' ' || v.modelo) AS vehiculo
         FROM citas c
         INNER JOIN vehiculos v ON c.id_vehiculo = v.id_vehiculo
         INNER JOIN clientes cl ON v.id_cliente = cl.id_cliente
-        WHERE c.estado = 'Completada'
+        WHERE c.estado = 'Confirmada'
     """)
-    suspend fun getCitasCompletadasParaOrden(): List<CitaParaOrden>
+    suspend fun getCitasConfirmadasParaOrden(): List<CitaParaOrden>
 }

@@ -11,7 +11,7 @@ import com.example.mecanapp.data.CitaItem
 
 class CitaAdapter(
     private var citasList: List<CitaItem>,
-    private val onCambiarEstado: (Int, String) -> Unit // Acción al tocar botones
+    private val onCambiarEstado: (Int, String) -> Unit
 ) : RecyclerView.Adapter<CitaAdapter.CitaViewHolder>() {
 
     class CitaViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -20,7 +20,6 @@ class CitaAdapter(
         val tvFechaHora = view.findViewById<TextView>(R.id.tvFechaHora)
         val tvVehiculo = view.findViewById<TextView>(R.id.tvVehiculoInfo)
         val tvServicio = view.findViewById<TextView>(R.id.tvServicioDesc)
-        val btnCompletar = view.findViewById<Button>(R.id.btnCompletar)
         val btnNoAsistio = view.findViewById<Button>(R.id.btnNoAsistio)
     }
 
@@ -45,16 +44,13 @@ class CitaAdapter(
             else -> holder.tvEstado.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.GRAY)
         }
 
-        // Ocultar botones si la cita ya finalizó (Opcional, mejora visual)
+        // Ocultar el botón si la cita ya finalizó o no asistió
         if (item.estado?.lowercase() == "completada" || item.estado?.lowercase() == "no asistió") {
-            holder.btnCompletar.visibility = View.GONE
             holder.btnNoAsistio.visibility = View.GONE
         } else {
-            holder.btnCompletar.visibility = View.VISIBLE
             holder.btnNoAsistio.visibility = View.VISIBLE
         }
 
-        holder.btnCompletar.setOnClickListener { onCambiarEstado(item.id_cita, "Completada") }
         holder.btnNoAsistio.setOnClickListener { onCambiarEstado(item.id_cita, "No asistió") }
     }
 

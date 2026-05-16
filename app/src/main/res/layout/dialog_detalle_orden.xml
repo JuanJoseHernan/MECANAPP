@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Detalles de la Orden"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Información Base -->
+        <TextView android:id="@+id/tvDetalleCliente" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cliente: " android:textSize="16sp" android:layout_marginBottom="4dp"/>
+        <TextView android:id="@+id/tvDetalleVehiculo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vehículo: " android:textSize="16sp" android:layout_marginBottom="4dp"/>
+        <TextView android:id="@+id/tvDetalleMecanico" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mecánico: " android:textSize="16sp" android:layout_marginBottom="4dp"/>
+        <TextView android:id="@+id/tvDetalleFecha" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Entrega: " android:textColor="#1565C0" android:textSize="16sp" android:textStyle="bold" android:layout_marginBottom="16dp"/>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginBottom="12dp"/>
+
+        <!-- Servicios -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Servicios de Mano de Obra:"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+        <LinearLayout
+            android:id="@+id/containerDetalleServicios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Refacciones -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refacciones Utilizadas:"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+        <LinearLayout
+            android:id="@+id/containerDetalleRefacciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnCerrarDetalles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cerrar" />
+
+    </LinearLayout>
+</ScrollView>

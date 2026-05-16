@@ -42,7 +42,7 @@
         <TextView
             android:id="@+id/tvCategoria"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="24dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_circle_blue"
             android:backgroundTint="#E0E0E0"

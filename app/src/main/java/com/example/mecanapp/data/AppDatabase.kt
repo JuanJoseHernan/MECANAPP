@@ -3,7 +3,6 @@ package com.example.mecanapp.data
 import android.content.Context
 import androidx.room.*
 
-
 @Entity(tableName = "clientes")
 data class Cliente(
     @PrimaryKey(autoGenerate = true) val id_cliente: Int = 0,
@@ -32,7 +31,8 @@ data class Usuario(
     val nombre: String,
     val rol: String?,
     val telefono: String?,
-    val correo: String?
+    val correo: String?,
+    val estado: String = "Disponible" // <-- NUEVO CAMPO AÑADIDO
 )
 
 @Entity(tableName = "servicios")
@@ -124,15 +124,15 @@ data class ReparacionRefaccion(
         Servicio::class, Inventario::class, Cita::class,
         Reparacion::class, ReparacionServicio::class, ReparacionRefaccion::class
     ],
-    version = 1,
+    version = 2, // <-- ACTUALIZADO A VERSIÓN 2
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun clienteDao(): ClienteDao
     abstract fun inventarioDao(): InventarioDao
-    abstract fun vehiculoDao(): VehiculoDao // ¡Agregamos el nuevo DAO!
-    abstract fun citaDao(): CitaDao       // <-- ¡AGREGA ESTO!
+    abstract fun vehiculoDao(): VehiculoDao
+    abstract fun citaDao(): CitaDao
     abstract fun reparacionDao(): ReparacionDao
     abstract fun usuarioDao(): UsuarioDao
 
@@ -148,7 +148,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "taller_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // <-- AÑADIDO para reconstruir la BD sin errores
+                    .build()
                 INSTANCE = instance
                 instance
             }
