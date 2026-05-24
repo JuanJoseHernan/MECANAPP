@@ -39,6 +39,19 @@ interface ReparacionDao {
     """)
     suspend fun getTodasLasReparaciones(): List<ReparacionDisplay>
 
+    // --- NUEVA BÚSQUEDA POR CLIENTE ---
+    @Query("""
+        SELECT r.id_reparacion, cl.nombre AS nombreCliente, v.placas, v.marca, v.modelo, 
+               u.nombre AS nombreMecanico, r.fecha_fin, r.estado
+        FROM reparaciones r
+        INNER JOIN vehiculos v ON r.id_vehiculo = v.id_vehiculo
+        INNER JOIN clientes cl ON v.id_cliente = cl.id_cliente
+        LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
+        WHERE cl.nombre LIKE '%' || :query || '%'
+        ORDER BY r.id_reparacion DESC
+    """)
+    suspend fun buscarReparacionesPorCliente(query: String): List<ReparacionDisplay>
+
     // --- NUEVA FUNCIÓN AÑADIDA ---
     // Nos permite obtener una reparación específica para saber qué mecánico tenía asignado
     @Query("SELECT * FROM reparaciones WHERE id_reparacion = :id")

@@ -1,5 +1,7 @@
 package com.example.mecanapp
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -57,7 +59,11 @@ class InicioFragment : Fragment() {
         // --- INICIO: LISTA DE USUARIOS ---
         val rvUsuarios = view.findViewById<RecyclerView>(R.id.rvUsuarios)
         rvUsuarios.layoutManager = LinearLayoutManager(requireContext())
-        adapterUsuarios = UsuarioAdapter(emptyList())
+
+        // Inicializamos el adapter con el callback para manejar el menú
+        adapterUsuarios = UsuarioAdapter(emptyList()) { usuario, accion ->
+            manejarAccionUsuario(usuario, accion)
+        }
         rvUsuarios.adapter = adapterUsuarios
 
         val btnAgregarUsuario = view.findViewById<Button>(R.id.btnAgregarUsuario)
@@ -67,6 +73,29 @@ class InicioFragment : Fragment() {
         // --- FIN: LISTA DE USUARIOS ---
 
         cargarDatos()
+    }
+
+    private fun manejarAccionUsuario(usuario: Usuario, accion: Int) {
+        when (accion) {
+            1 -> { // Llamar
+                if (usuario.telefono.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), "Sin teléfono registrado", Toast.LENGTH_SHORT).show()
+                } else {
+                    val intent = Intent(Intent.ACTION_DIAL)
+                    intent.data = Uri.parse("tel:${usuario.telefono}")
+                    startActivity(intent)
+                }
+            }
+            2 -> { // Correo
+                if (usuario.correo.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), "Sin correo registrado", Toast.LENGTH_SHORT).show()
+                } else {
+                    val intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("mailto:${usuario.correo}")
+                    startActivity(intent)
+                }
+            }
+        }
     }
 
     private fun cargarDatos() {

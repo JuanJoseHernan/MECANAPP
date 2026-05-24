@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mecanapp.data.Inventario
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import java.util.Locale
 
 class InventarioAdapter(private var inventarioList: List<Inventario>) :
     RecyclerView.Adapter<InventarioAdapter.InventarioViewHolder>() {
@@ -18,6 +19,7 @@ class InventarioAdapter(private var inventarioList: List<Inventario>) :
         val card = view.findViewById<MaterialCardView>(R.id.cardInventario)
         val tvNombre = view.findViewById<TextView>(R.id.tvNombreRefaccion)
         val tvCategoria = view.findViewById<TextView>(R.id.tvCategoria)
+        val tvPrecio = view.findViewById<TextView>(R.id.tvPrecioRefaccion) // NUEVO ID
         val tvCantidades = view.findViewById<TextView>(R.id.tvCantidades)
         val ivEstatus = view.findViewById<ImageView>(R.id.ivEstatus)
         val progressStock = view.findViewById<LinearProgressIndicator>(R.id.progressStock)
@@ -33,28 +35,28 @@ class InventarioAdapter(private var inventarioList: List<Inventario>) :
 
         holder.tvNombre.text = item.nombre
         holder.tvCategoria.text = item.descripcion ?: "Sin descripción"
+
+        // NUEVO: Formateamos y mostramos el precio
+        val precio = item.precio ?: 0.0
+        holder.tvPrecio.text = "$${String.format(Locale.US, "%.2f", precio)} c/u"
+
         holder.tvCantidades.text = "${item.cantidad} / ${item.cantidad_minima} unidades"
 
         // --- LÓGICA DE LA BARRA ---
-        // El tamaño máximo de la barra será la cantidad mínima
         val maxProgress = if (item.cantidad_minima > 0) item.cantidad_minima else 1
         holder.progressStock.max = maxProgress
-
-        // Si tenemos igual o más, la barra se llena al 100%. Si tenemos menos, baja.
         holder.progressStock.progress = if (item.cantidad >= item.cantidad_minima) maxProgress else item.cantidad
 
         // --- LÓGICA DE COLORES ---
         val isStockBajo = item.cantidad < item.cantidad_minima
 
         if (isStockBajo) {
-            // Peligro (Rojo y fondo rosado claro)
             holder.card.setCardBackgroundColor(Color.parseColor("#FFF0F0"))
-            holder.ivEstatus.setImageResource(R.drawable.ic_warning) // Asegúrate de tener este icono
+            holder.ivEstatus.setImageResource(R.drawable.ic_warning)
             holder.ivEstatus.setColorFilter(Color.parseColor("#F44336"))
             holder.progressStock.setIndicatorColor(Color.parseColor("#F44336"))
             holder.tvCantidades.setTextColor(Color.parseColor("#F44336"))
         } else {
-            // Bien (Verde y fondo blanco)
             holder.card.setCardBackgroundColor(Color.WHITE)
             holder.ivEstatus.setImageResource(R.drawable.ic_check)
             holder.ivEstatus.setColorFilter(Color.parseColor("#4CAF50"))

@@ -1,9 +1,12 @@
 package com.example.mecanapp
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -12,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mecanapp.data.AppDatabase
 import com.example.mecanapp.data.CitaParaOrden
@@ -36,6 +40,9 @@ import java.util.TimeZone
 class OrdenesFragment : Fragment() {
 
     private lateinit var adapter: ReparacionAdapter
+    private lateinit var tvSinResultados: TextView
+    private lateinit var rvOrdenes: RecyclerView
+    private lateinit var etBuscarOrden: TextInputEditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,17 +54,36 @@ class OrdenesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val rv = view.findViewById<RecyclerView>(R.id.rvOrdenes)
+        rvOrdenes = view.findViewById(R.id.rvOrdenes)
+        tvSinResultados = view.findViewById(R.id.tvSinResultadosOrdenes)
+        etBuscarOrden = view.findViewById(R.id.etBuscarOrden)
+
         adapter = ReparacionAdapter(emptyList(),
             onFinalizarClick = { id -> finalizarOrden(id) },
             onDetalleClick = { id -> mostrarDetallesOrden(id) }
         )
-        rv.adapter = adapter
+        rvOrdenes.adapter = adapter
+        rvOrdenes.layoutManager = LinearLayoutManager(requireContext())
 
         cargarOrdenesDeBD()
 
         val fab = view.findViewById<FloatingActionButton>(R.id.fabAgregarOrden)
         fab.setOnClickListener { mostrarFormularioNuevaOrden() }
+
+        // --- LÓGICA DE LA BARRA DE BÚSQUEDA ---
+        etBuscarOrden.setOnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = etBuscarOrden.text.toString().trim()
+                buscarOrdenes(query)
+
+                // Ocultar el teclado al buscar
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun cargarOrdenesDeBD() {
@@ -66,9 +92,45 @@ class OrdenesFragment : Fragment() {
             val lista = withContext(Dispatchers.IO) {
                 db.reparacionDao().getTodasLasReparaciones()
             }
-            adapter.actualizar(lista)
+            actualizarUI(lista)
         }
     }
+
+    private fun buscarOrdenes(query: String) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(requireContext())
+            val lista = withContext(Dispatchers.IO) {
+                if (query.isEmpty()) {
+                    db.reparacionDao().getTodasLasReparaciones()
+                } else {
+                    // LLAMAMOS A LA NUEVA FUNCIÓN DEL DAO
+                    db.reparacionDao().buscarReparacionesPorCliente(query)
+                }
+            }
+            actualizarUI(lista)
+        }
+    }
+
+    // Función auxiliar para actualizar lista y mostrar texto de vacío si es necesario
+    private fun actualizarUI(lista: List<Any>) { // Reemplaza 'Any' por el tipo de dato que usa ReparacionAdapter
+        // Hacemos un casteo inseguro solo para el ejemplo, asegúrate de que lista sea del tipo correcto
+        adapter.actualizar(lista as List<Nothing>)
+
+        if (lista.isEmpty()) {
+            rvOrdenes.visibility = View.GONE
+            tvSinResultados.visibility = View.VISIBLE
+            if (etBuscarOrden.text.toString().isNotEmpty()) {
+                tvSinResultados.text = "No se encontraron órdenes para este cliente"
+            } else {
+                tvSinResultados.text = "Aún no hay órdenes registradas"
+            }
+        } else {
+            rvOrdenes.visibility = View.VISIBLE
+            tvSinResultados.visibility = View.GONE
+        }
+    }
+
+    // --- EL RESTO DE TU CÓDIGO SE MANTIENE EXACTAMENTE IGUAL ---
 
     private fun mostrarDetallesOrden(idReparacion: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_detalle_orden, null)
@@ -89,17 +151,20 @@ class OrdenesFragment : Fragment() {
             dialogView.findViewById<TextView>(R.id.tvDetalleMecanico).text = "Mecánico: ${infoBase?.nombre_mecanico ?: "Sin asignar"}"
             dialogView.findViewById<TextView>(R.id.tvDetalleFecha).text = "Entrega: ${infoBase?.fecha_fin ?: "N/A"}"
 
+            var totalFinal = 0.0
+
             val containerServicios = dialogView.findViewById<LinearLayout>(R.id.containerDetalleServicios)
             if (servicios.isEmpty()) {
                 containerServicios.addView(TextView(requireContext()).apply { text = "No se registraron servicios." })
             } else {
                 servicios.forEach { s ->
                     val tv = TextView(requireContext()).apply {
-                        text = "• ${s.nombre} - $${s.precio}"
+                        text = "• ${s.nombre} - $${s.precio ?: 0.0}"
                         textSize = 15f
                         setPadding(0, 4, 0, 4)
                     }
                     containerServicios.addView(tv)
+                    totalFinal += (s.precio ?: 0.0)
                 }
             }
 
@@ -108,14 +173,20 @@ class OrdenesFragment : Fragment() {
                 containerRefacciones.addView(TextView(requireContext()).apply { text = "No se usaron refacciones." })
             } else {
                 refacciones.forEach { r ->
+                    val precioUnitario = r.precio ?: 0.0
+                    val subtotalRefaccion = precioUnitario * r.cantidad
                     val tv = TextView(requireContext()).apply {
-                        text = "• ${r.nombre} (Cantidad: ${r.cantidad})"
+                        text = "• ${r.nombre} (x${r.cantidad}) - $${String.format(Locale.US, "%.2f", precioUnitario)} c/u = $${String.format(Locale.US, "%.2f", subtotalRefaccion)}"
                         textSize = 15f
                         setPadding(0, 4, 0, 4)
                     }
                     containerRefacciones.addView(tv)
+                    totalFinal += subtotalRefaccion
                 }
             }
+
+            val tvTotal = dialogView.findViewById<TextView>(R.id.tvTotalOrden)
+            tvTotal.text = "$${String.format(Locale.US, "%.2f", totalFinal)}"
         }
 
         dialogView.findViewById<Button>(R.id.btnCerrarDetalles).setOnClickListener { dialog.dismiss() }
@@ -167,7 +238,6 @@ class OrdenesFragment : Fragment() {
             val daoDetalle = db.reparacionDetalleDao()
             val inventarioFull = withContext(Dispatchers.IO) { db.inventarioDao().getInventario() }
 
-            // Usamos la nueva consulta de ReparacionDao para obtener el id_usuario
             val reparacion = withContext(Dispatchers.IO) {
                 db.reparacionDao().getReparacionById(idRep)
             }
@@ -194,10 +264,8 @@ class OrdenesFragment : Fragment() {
                     }
                 }
 
-                // 1. Completar la reparación
                 db.reparacionDao().actualizarEstado(idRep, "Completada")
 
-                // 2. Liberar al mecánico (Cambiar su estado a Disponible)
                 if (idUsuarioAsignado != null) {
                     db.usuarioDao().actualizarEstado(idUsuarioAsignado, "Disponible")
                 }
@@ -243,11 +311,10 @@ class OrdenesFragment : Fragment() {
 
             val mecanicosDisponibles = todosUsuarios.filter { it.rol == "Mecánico" && it.estado == "Disponible" }
 
-            // MODIFICACIÓN AQUÍ: Manejo visual de lista vacía
             if (mecanicosDisponibles.isEmpty()) {
                 val mensajeVacio = listOf("No hay mecánicos disponibles")
                 etMecanico.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, mensajeVacio))
-                etMecanico.setText("", false) // Limpiar cualquier texto previo sin disparar filtros
+                etMecanico.setText("", false)
             } else {
                 val opcionesMecanicos = mecanicosDisponibles.map {
                     mecanicosMap[it.nombre] = it.id_usuario
@@ -260,11 +327,9 @@ class OrdenesFragment : Fragment() {
         etCita.setOnItemClickListener { _, _, position, _ -> citaSeleccionada = citasMap[etCita.adapter.getItem(position).toString()] }
         etMecanico.setOnItemClickListener { _, _, position, _ ->
             val seleccion = etMecanico.adapter.getItem(position).toString()
-            // Verificamos que no sea nuestro mensaje de error antes de asignar el ID
             if (seleccion != "No hay mecánicos disponibles") {
                 mecanicoSeleccionadoId = mecanicosMap[seleccion]
             } else {
-                // Si seleccionan el mensaje de error, reseteamos la selección y limpiamos el texto
                 mecanicoSeleccionadoId = null
                 etMecanico.setText("", false)
                 Toast.makeText(requireContext(), "Debes registrar o liberar a un mecánico primero.", Toast.LENGTH_SHORT).show()

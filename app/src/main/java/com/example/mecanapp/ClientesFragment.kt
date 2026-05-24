@@ -1,6 +1,8 @@
 package com.example.mecanapp
 
 import android.content.Context
+import android.content.Intent // NUEVO: Para la llamada
+import android.net.Uri // NUEVO: Para la llamada
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +47,10 @@ class ClientesFragment : Fragment() {
         rvClientes = view.findViewById(R.id.rvClientes)
         etBuscarCliente = view.findViewById(R.id.etBuscarCliente)
 
-        adapter = ClienteAdapter(emptyList())
+        // NUEVO: Pasamos la lógica del clic al Adapter
+        adapter = ClienteAdapter(emptyList()) { cliente ->
+            mostrarDialogoLlamada(cliente)
+        }
         rvClientes.adapter = adapter
 
         cargarClientesDeBD()
@@ -111,6 +116,25 @@ class ClientesFragment : Fragment() {
             rvClientes.visibility = View.VISIBLE
             tvSinResultados.visibility = View.GONE
         }
+    }
+
+    // NUEVA FUNCIÓN: Ventana para confirmar la llamada
+    private fun mostrarDialogoLlamada(cliente: Cliente) {
+        if (cliente.telefono.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "Este cliente no tiene un número registrado.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Contactar a ${cliente.nombre}")
+            .setMessage("¿Quieres llamar al cliente al número ${cliente.telefono}?")
+            .setPositiveButton("Llamar") { _, _ ->
+                val intent = Intent(Intent.ACTION_DIAL)
+                intent.data = Uri.parse("tel:${cliente.telefono}")
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     // Mantén tu función "mostrarFormularioNuevoCliente" exactamente igual aquí abajo

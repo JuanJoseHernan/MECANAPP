@@ -39,18 +39,40 @@
                 app:tint="#4CAF50" />
         </RelativeLayout>
 
-        <TextView
-            android:id="@+id/tvCategoria"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_circle_blue"
-            android:backgroundTint="#E0E0E0"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:text="Filtros"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvCategoria"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_circle_blue"
+                android:backgroundTint="#E0E0E0"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Filtros"
+                android:textColor="@android:color/black"
+                android:textSize="12sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- NUEVO: Campo del Precio -->
+            <TextView
+                android:id="@+id/tvPrecioRefaccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$0.00 c/u"
+                android:textColor="#4CAF50"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"

@@ -15,7 +15,8 @@ data class DetalleOrdenBase(
 )
 
 data class DetalleServicio(val nombre: String, val precio: Double?)
-data class DetalleRefaccion(val nombre: String, val cantidad: Int)
+// CORREGIDO: Se agregó val precio: Double?
+data class DetalleRefaccion(val nombre: String, val cantidad: Int, val precio: Double?)
 
 @Dao
 interface ReparacionDetalleDao {
@@ -52,8 +53,9 @@ interface ReparacionDetalleDao {
     """)
     suspend fun getServiciosDeReparacion(idReparacion: Int): List<DetalleServicio>
 
+    // CORREGIDO: Se agregó i.precio a la consulta SELECT
     @Query("""
-        SELECT i.nombre, rr.cantidad 
+        SELECT i.nombre, rr.cantidad, i.precio 
         FROM inventario i 
         INNER JOIN reparacion_refacciones rr ON i.id_refaccion = rr.id_refaccion 
         WHERE rr.id_reparacion = :idReparacion
