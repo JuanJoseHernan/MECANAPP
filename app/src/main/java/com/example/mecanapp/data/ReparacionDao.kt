@@ -28,6 +28,10 @@ interface ReparacionDao {
     @Query("UPDATE reparaciones SET estado = :nuevoEstado WHERE id_reparacion = :id")
     suspend fun actualizarEstado(id: Int, nuevoEstado: String)
 
+    // --- NUEVA FUNCIÓN PARA CONGELAR EL TOTAL ---
+    @Query("UPDATE reparaciones SET estado = :estado, total_orden = :total WHERE id_reparacion = :id")
+    suspend fun actualizarEstadoYTotal(id: Int, estado: String, total: Double)
+
     @Query("""
         SELECT r.id_reparacion, cl.nombre AS nombreCliente, v.placas, v.marca, v.modelo, 
                u.nombre AS nombreMecanico, r.fecha_fin, r.estado
@@ -39,7 +43,6 @@ interface ReparacionDao {
     """)
     suspend fun getTodasLasReparaciones(): List<ReparacionDisplay>
 
-    // --- NUEVA BÚSQUEDA POR CLIENTE ---
     @Query("""
         SELECT r.id_reparacion, cl.nombre AS nombreCliente, v.placas, v.marca, v.modelo, 
                u.nombre AS nombreMecanico, r.fecha_fin, r.estado
@@ -52,8 +55,6 @@ interface ReparacionDao {
     """)
     suspend fun buscarReparacionesPorCliente(query: String): List<ReparacionDisplay>
 
-    // --- NUEVA FUNCIÓN AÑADIDA ---
-    // Nos permite obtener una reparación específica para saber qué mecánico tenía asignado
     @Query("SELECT * FROM reparaciones WHERE id_reparacion = :id")
     suspend fun getReparacionById(id: Int): Reparacion?
 }

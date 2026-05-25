@@ -70,13 +70,11 @@ class OrdenesFragment : Fragment() {
         val fab = view.findViewById<FloatingActionButton>(R.id.fabAgregarOrden)
         fab.setOnClickListener { mostrarFormularioNuevaOrden() }
 
-        // --- LÓGICA DE LA BARRA DE BÚSQUEDA ---
         etBuscarOrden.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val query = etBuscarOrden.text.toString().trim()
                 buscarOrdenes(query)
 
-                // Ocultar el teclado al buscar
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0)
                 true
@@ -103,7 +101,6 @@ class OrdenesFragment : Fragment() {
                 if (query.isEmpty()) {
                     db.reparacionDao().getTodasLasReparaciones()
                 } else {
-                    // LLAMAMOS A LA NUEVA FUNCIÓN DEL DAO
                     db.reparacionDao().buscarReparacionesPorCliente(query)
                 }
             }
@@ -111,9 +108,7 @@ class OrdenesFragment : Fragment() {
         }
     }
 
-    // Función auxiliar para actualizar lista y mostrar texto de vacío si es necesario
-    private fun actualizarUI(lista: List<Any>) { // Reemplaza 'Any' por el tipo de dato que usa ReparacionAdapter
-        // Hacemos un casteo inseguro solo para el ejemplo, asegúrate de que lista sea del tipo correcto
+    private fun actualizarUI(lista: List<Any>) {
         adapter.actualizar(lista as List<Nothing>)
 
         if (lista.isEmpty()) {
@@ -130,8 +125,6 @@ class OrdenesFragment : Fragment() {
         }
     }
 
-    // --- EL RESTO DE TU CÓDIGO SE MANTIENE EXACTAMENTE IGUAL ---
-
     private fun mostrarDetallesOrden(idReparacion: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_detalle_orden, null)
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -146,12 +139,13 @@ class OrdenesFragment : Fragment() {
             val servicios = withContext(Dispatchers.IO) { dao.getServiciosDeReparacion(idReparacion) }
             val refacciones = withContext(Dispatchers.IO) { dao.getRefaccionesDeReparacion(idReparacion) }
 
+            // NUEVO: Consultamos la reparación para sacar su total congelado
+            val reparacion = withContext(Dispatchers.IO) { db.reparacionDao().getReparacionById(idReparacion) }
+
             dialogView.findViewById<TextView>(R.id.tvDetalleCliente).text = "Cliente: ${infoBase?.nombre_cliente ?: "Desconocido"}"
             dialogView.findViewById<TextView>(R.id.tvDetalleVehiculo).text = "Vehículo: ${infoBase?.marca ?: ""} ${infoBase?.modelo ?: ""} (${infoBase?.placas ?: ""})"
             dialogView.findViewById<TextView>(R.id.tvDetalleMecanico).text = "Mecánico: ${infoBase?.nombre_mecanico ?: "Sin asignar"}"
             dialogView.findViewById<TextView>(R.id.tvDetalleFecha).text = "Entrega: ${infoBase?.fecha_fin ?: "N/A"}"
-
-            var totalFinal = 0.0
 
             val containerServicios = dialogView.findViewById<LinearLayout>(R.id.containerDetalleServicios)
             if (servicios.isEmpty()) {
@@ -164,7 +158,6 @@ class OrdenesFragment : Fragment() {
                         setPadding(0, 4, 0, 4)
                     }
                     containerServicios.addView(tv)
-                    totalFinal += (s.precio ?: 0.0)
                 }
             }
 
@@ -181,12 +174,12 @@ class OrdenesFragment : Fragment() {
                         setPadding(0, 4, 0, 4)
                     }
                     containerRefacciones.addView(tv)
-                    totalFinal += subtotalRefaccion
                 }
             }
 
             val tvTotal = dialogView.findViewById<TextView>(R.id.tvTotalOrden)
-            tvTotal.text = "$${String.format(Locale.US, "%.2f", totalFinal)}"
+            // NUEVO: Mostramos el total directamente guardado en la BD
+            tvTotal.text = "$${String.format(Locale.US, "%.2f", reparacion?.total_orden ?: 0.0)}"
         }
 
         dialogView.findViewById<Button>(R.id.btnCerrarDetalles).setOnClickListener { dialog.dismiss() }
@@ -243,6 +236,8 @@ class OrdenesFragment : Fragment() {
             }
             val idUsuarioAsignado = reparacion?.id_usuario
 
+            var totalFinalOrden = 0.0 // NUEVO: Acumulador de total
+
             withContext(Dispatchers.IO) {
                 for (i in 0 until container.childCount) {
                     val view = container.getChildAt(i)
@@ -256,22 +251,29 @@ class OrdenesFragment : Fragment() {
                         val idServicio = daoDetalle.insertarServicio(nuevoServicio)
                         daoDetalle.vincularServicio(ReparacionServicio(idRep, idServicio.toInt()))
 
+                        totalFinalOrden += precioS // Sumamos al total final
+
                         val refEncontrada = inventarioFull.find { it.nombre == refaccionNombre }
                         if (refEncontrada != null && cantRef > 0) {
-                            daoDetalle.vincularRefaccion(ReparacionRefaccion(idRep, refEncontrada.id_refaccion, cantRef))
+                            val precioVendido = refEncontrada.precio ?: 0.0
+                            // NUEVO: Guardamos el precio congelado
+                            daoDetalle.vincularRefaccion(ReparacionRefaccion(idRep, refEncontrada.id_refaccion, cantRef, precioVendido))
                             daoDetalle.descontarInventario(refEncontrada.id_refaccion, cantRef)
+
+                            totalFinalOrden += (precioVendido * cantRef) // Sumamos refacciones al total final
                         }
                     }
                 }
 
-                db.reparacionDao().actualizarEstado(idRep, "Completada")
+                // NUEVO: Llamamos a la función que actualiza estado Y total (requiere actualizar DAO)
+                db.reparacionDao().actualizarEstadoYTotal(idRep, "Completada", totalFinalOrden)
 
                 if (idUsuarioAsignado != null) {
                     db.usuarioDao().actualizarEstado(idUsuarioAsignado, "Disponible")
                 }
             }
 
-            Toast.makeText(requireContext(), "Orden finalizada y mecánico liberado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Orden finalizada. Total guardado.", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
             cargarOrdenesDeBD()
         }

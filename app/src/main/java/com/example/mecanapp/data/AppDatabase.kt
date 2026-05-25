@@ -32,7 +32,7 @@ data class Usuario(
     val rol: String?,
     val telefono: String?,
     val correo: String?,
-    val estado: String = "Disponible" // <-- NUEVO CAMPO AÑADIDO
+    val estado: String = "Disponible"
 )
 
 @Entity(tableName = "servicios")
@@ -85,9 +85,9 @@ data class Reparacion(
     val id_usuario: Int?,
     val estado: String?,
     val fecha_inicio: String?,
-    val fecha_fin: String?
+    val fecha_fin: String?,
+    val total_orden: Double = 0.0 // <-- NUEVO CAMPO PARA CONGELAR EL TOTAL
 )
-
 
 @Entity(
     tableName = "reparacion_servicios",
@@ -115,7 +115,8 @@ data class ReparacionServicio(
 data class ReparacionRefaccion(
     val id_reparacion: Int,
     val id_refaccion: Int,
-    val cantidad: Int
+    val cantidad: Int,
+    val precio_cobrado: Double = 0.0 // <-- NUEVO CAMPO PARA CONGELAR EL PRECIO UNITARIO
 )
 
 @Database(
@@ -124,7 +125,7 @@ data class ReparacionRefaccion(
         Servicio::class, Inventario::class, Cita::class,
         Reparacion::class, ReparacionServicio::class, ReparacionRefaccion::class
     ],
-    version = 2, // <-- ACTUALIZADO A VERSIÓN 2
+    version = 3, // <-- ACTUALIZADO A VERSIÓN 3
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -135,7 +136,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun citaDao(): CitaDao
     abstract fun reparacionDao(): ReparacionDao
     abstract fun usuarioDao(): UsuarioDao
-
     abstract fun reparacionDetalleDao(): ReparacionDetalleDao
 
     companion object {
@@ -149,7 +149,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "taller_database"
                 )
-                    .fallbackToDestructiveMigration() // <-- AÑADIDO para reconstruir la BD sin errores
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

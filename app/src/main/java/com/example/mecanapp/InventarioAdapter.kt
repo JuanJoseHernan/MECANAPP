@@ -8,21 +8,28 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mecanapp.data.Inventario
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import java.util.Locale
 
-class InventarioAdapter(private var inventarioList: List<Inventario>) :
-    RecyclerView.Adapter<InventarioAdapter.InventarioViewHolder>() {
+// NUEVO: Agregamos el parámetro onEditarClick al constructor
+class InventarioAdapter(
+    private var inventarioList: List<Inventario>,
+    private val onEditarClick: (Inventario) -> Unit
+) : RecyclerView.Adapter<InventarioAdapter.InventarioViewHolder>() {
 
     class InventarioViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val card = view.findViewById<MaterialCardView>(R.id.cardInventario)
         val tvNombre = view.findViewById<TextView>(R.id.tvNombreRefaccion)
         val tvCategoria = view.findViewById<TextView>(R.id.tvCategoria)
-        val tvPrecio = view.findViewById<TextView>(R.id.tvPrecioRefaccion) // NUEVO ID
+        val tvPrecio = view.findViewById<TextView>(R.id.tvPrecioRefaccion)
         val tvCantidades = view.findViewById<TextView>(R.id.tvCantidades)
         val ivEstatus = view.findViewById<ImageView>(R.id.ivEstatus)
         val progressStock = view.findViewById<LinearProgressIndicator>(R.id.progressStock)
+
+        // NUEVO: Referencia al botón de editar que agregaste en el XML
+        val btnEditar = view.findViewById<MaterialButton>(R.id.btnEditar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InventarioViewHolder {
@@ -36,7 +43,7 @@ class InventarioAdapter(private var inventarioList: List<Inventario>) :
         holder.tvNombre.text = item.nombre
         holder.tvCategoria.text = item.descripcion ?: "Sin descripción"
 
-        // NUEVO: Formateamos y mostramos el precio
+        // Formateamos y mostramos el precio
         val precio = item.precio ?: 0.0
         holder.tvPrecio.text = "$${String.format(Locale.US, "%.2f", precio)} c/u"
 
@@ -62,6 +69,11 @@ class InventarioAdapter(private var inventarioList: List<Inventario>) :
             holder.ivEstatus.setColorFilter(Color.parseColor("#4CAF50"))
             holder.progressStock.setIndicatorColor(Color.parseColor("#388E3C"))
             holder.tvCantidades.setTextColor(Color.BLACK)
+        }
+
+        // NUEVO: Configuramos la acción al hacer clic en el botón Editar
+        holder.btnEditar.setOnClickListener {
+            onEditarClick(item)
         }
     }
 

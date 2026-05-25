@@ -36,7 +36,11 @@ class InventarioFragment : Fragment() {
 
         tvAlertas = view.findViewById(R.id.tvAlertasInventario)
         val rvInventario = view.findViewById<RecyclerView>(R.id.rvInventario)
-        adapter = InventarioAdapter(emptyList())
+
+        // ACTUALIZADO: Pasamos la acción de editar al Adapter
+        adapter = InventarioAdapter(emptyList()) { itemSeleccionado ->
+            mostrarFormularioEditarRefaccion(itemSeleccionado)
+        }
         rvInventario.adapter = adapter
 
         cargarInventario()
@@ -64,6 +68,48 @@ class InventarioFragment : Fragment() {
                 tvAlertas.setTextColor(android.graphics.Color.parseColor("#4CAF50"))
             }
         }
+    }
+
+    // NUEVO: Función para mostrar el diálogo de edición
+    private fun mostrarFormularioEditarRefaccion(item: Inventario) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_editar_refaccion, null)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView).setCancelable(false).create()
+
+        val etCantidad = dialogView.findViewById<TextInputEditText>(R.id.etCantidadEditar)
+        val etPrecio = dialogView.findViewById<TextInputEditText>(R.id.etPrecioEditar)
+        val btnCancelar = dialogView.findViewById<Button>(R.id.btnCancelarEditar)
+        val btnGuardar = dialogView.findViewById<Button>(R.id.btnGuardarEditar)
+
+        // Llenar datos actuales
+        etCantidad.setText(item.cantidad.toString())
+        etPrecio.setText((item.precio ?: 0.0).toString())
+
+        btnCancelar.setOnClickListener { dialog.dismiss() }
+
+        btnGuardar.setOnClickListener {
+            val nuevaCantidad = etCantidad.text.toString().toIntOrNull() ?: item.cantidad
+            val nuevoPrecio = etPrecio.text.toString().toDoubleOrNull() ?: item.precio ?: 0.0
+
+            // LÓGICA CORRECTA: Si la cantidad nueva es mayor a la mínima actual, pasa a ser la nueva mínima
+            val nuevaMinima = if (nuevaCantidad > item.cantidad_minima) nuevaCantidad else item.cantidad_minima
+
+            val itemActualizado = item.copy(
+                cantidad = nuevaCantidad,
+                cantidad_minima = nuevaMinima,
+                precio = nuevoPrecio
+            )
+
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    AppDatabase.getDatabase(requireContext()).inventarioDao().update(itemActualizado)
+                }
+                Toast.makeText(requireContext(), "Actualizado ✅", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+                cargarInventario()
+            }
+        }
+        dialog.show()
     }
 
     private fun mostrarFormularioNuevaRefaccion() {
@@ -109,7 +155,8 @@ class InventarioFragment : Fragment() {
                         nombre = nombre,
                         descripcion = descripcion,
                         cantidad = actual,
-                        cantidad_minima = actual, // ¡Se guarda igual a la cantidad!
+                        // Al crear, la cantidad mínima será igual a la cantidad ingresada inicialmente
+                        cantidad_minima = actual,
                         precio = precio
                     )
                     AppDatabase.getDatabase(requireContext()).inventarioDao().insert(nuevaRefaccion)

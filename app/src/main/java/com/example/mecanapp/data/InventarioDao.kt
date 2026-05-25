@@ -12,10 +12,8 @@ interface InventarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(refaccion: Inventario)
 
-
     @Query("SELECT * FROM inventario")
     suspend fun getInventario(): List<Inventario>
-
 
     @Update
     suspend fun update(refaccion: Inventario)

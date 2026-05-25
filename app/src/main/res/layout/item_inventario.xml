@@ -108,5 +108,17 @@
             app:trackCornerRadius="4dp"
             app:trackThickness="6dp" />
 
-    </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditar"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:text="Editar"
+            android:textColor="#2196F3" />
+        <!-- app:icon="@drawable/ic_edit" -->
+
+
+</LinearLayout>
 </com.google.android.material.card.MaterialCardView>
